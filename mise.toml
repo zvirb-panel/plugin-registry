@@ -1,0 +1,19 @@
+[tools]
+node = "22.23.4"
+
+[tasks.install]
+description = "Install the pinned Prettier from package-lock.json"
+run = "npm ci"
+sources = ["package-lock.json"]
+outputs = ["node_modules/.package-lock.json"]
+hide = true
+
+[tasks.check]
+description = "Prettier check on every JSON and Markdown file; a parse error fails it too"
+depends = ["install"]
+run = ["echo check: prettier", "npm exec --no-install -- prettier --check \"**/*.{json,md}\""]
+
+[tasks.fmt]
+description = "Format every JSON and Markdown file"
+depends = ["install"]
+run = ["echo fmt: prettier", "npm exec --no-install -- prettier --write \"**/*.{json,md}\""]
