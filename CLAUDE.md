@@ -6,18 +6,21 @@ The registry of Zvirb plugins: a signed `index.json`, icons and public keys. Rea
 
 Nothing but tooling yet. The index, its schema and the keys arrive with `registry-index` in stage 07, and this file gets their layout then.
 
-| Path                                | Holds                                       |
-| ----------------------------------- | ------------------------------------------- |
-| `mise.toml`                         | Pinned Node and the `check` and `fmt` tasks |
-| `package.json`, `package-lock.json` | Prettier at an exact version                |
-| `.github/pull_request_template.md`  | The workspace's PR template                 |
+| Path                                               | Holds                                                                                                                                                |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mise.toml`                                        | Pinned Node and the `check` and `fmt` tasks                                                                                                          |
+| `package.json`, `package-lock.json`                | Prettier at an exact version                                                                                                                         |
+| `.github/pull_request_template.md`                 | The workspace's PR template                                                                                                                          |
+| `.github/workflows/`                               | `ci.yml` runs `mise run check` on Linux and Windows; `pr-title.yml` checks the PR title. Actions are pinned to SHAs and Dependabot bumps them weekly |
+| `scripts/check-actions.mjs`                        | Fails on a workflow `uses:` that isn't pinned to a commit SHA                                                                                        |
+| `scripts/check-advisories.mjs`, `osv-scanner.toml` | Runs `osv-scanner` over `package-lock.json`. An accepted advisory is an `[[IgnoredVulns]]` entry with `id`, `ignoreUntil` and `reason`               |
 
 ## Commands
 
-| Command          | Does                                                                                                       |
-| ---------------- | ---------------------------------------------------------------------------------------------------------- |
-| `mise run check` | `prettier --check` on every JSON and Markdown file. A JSON syntax error fails it, naming the file and line |
-| `mise run fmt`   | `prettier --write` on the same files                                                                       |
+| Command          | Does                                                                                                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `mise run check` | `prettier --check` on every JSON and Markdown file (a JSON syntax error fails it, naming the file and line), then the pinned-actions check and `osv-scanner` |
+| `mise run fmt`   | `prettier --write` on the same files                                                                                                                         |
 
 `check` installs the locked Prettier first (`npm ci`) when `package-lock.json` has changed.
 

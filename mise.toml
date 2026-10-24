@@ -1,5 +1,6 @@
 [tools]
 node = "24.22.1"
+"aqua:google/osv-scanner" = "2.7.0"
 
 [tasks.install]
 description = "Install the pinned Prettier from package-lock.json"
@@ -9,9 +10,16 @@ outputs = ["node_modules/.package-lock.json"]
 hide = true
 
 [tasks.check]
-description = "Prettier check on every JSON and Markdown file; a parse error fails it too"
+description = "Prettier check on every JSON and Markdown file, pinned actions and known advisories"
 depends = ["install"]
-run = ["echo check: prettier", "npm exec --no-install -- prettier --check \"**/*.{json,md}\""]
+run = [
+  "echo check: prettier",
+  "npm exec --no-install -- prettier --check \"**/*.{json,md}\"",
+  "echo check: node scripts/check-actions.mjs",
+  "node scripts/check-actions.mjs",
+  "echo check: osv-scanner",
+  "node scripts/check-advisories.mjs",
+]
 
 [tasks.fmt]
 description = "Format every JSON and Markdown file"
