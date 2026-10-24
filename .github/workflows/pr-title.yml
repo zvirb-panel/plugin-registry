@@ -22,6 +22,7 @@ jobs:
             index
             keys
             ci
+            tooling
           requireScope: false
           subjectPattern: ^[a-z].+[^.]$
           subjectPatternError: Start the summary with a lower-case letter and leave off the full stop.
