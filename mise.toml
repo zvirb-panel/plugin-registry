@@ -17,3 +17,6 @@ run = ["echo check: prettier", "npm exec --no-install -- prettier --check \"**/*
 description = "Format every JSON and Markdown file"
 depends = ["install"]
 run = ["echo fmt: prettier", "npm exec --no-install -- prettier --write \"**/*.{json,md}\""]
+
+[settings]
+lockfile = true
