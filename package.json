@@ -1,0 +1,8 @@
+{
+  "name": "plugin-registry",
+  "private": true,
+  "description": "The signed plugin index, icons and public keys",
+  "devDependencies": {
+    "prettier": "3.9.10"
+  }
+}
