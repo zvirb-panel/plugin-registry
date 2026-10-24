@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "editorconfig.editorconfig",
+    "hverlin.mise-vscode",
+    "esbenp.prettier-vscode",
+    "redhat.vscode-yaml",
+    "github.vscode-github-actions"
+  ]
+}
