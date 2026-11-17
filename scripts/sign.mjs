@@ -1,5 +1,7 @@
 // Stamps index.json with the time, formats it, and signs its bytes into
-// index.json.sig, with the private key at the path given.
+// index.json.sig, with the private key at the path given, or, with no path,
+// the key in REGISTRY_SIGNING_KEY, as plugins' release workflow passes it so
+// the key never lands in a file.
 //   node scripts/sign.mjs ~/.config/zvirb/registry-signing.pem
 import { spawnSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -8,11 +10,17 @@ import { exitIfNotStarted } from "./spawn.mjs";
 import { signatureOf } from "./signing.mjs";
 
 const [keyPath] = process.argv.slice(2);
-if (keyPath === undefined) {
-  console.error("usage: node scripts/sign.mjs <private key path>");
+const key =
+  keyPath === undefined
+    ? process.env.REGISTRY_SIGNING_KEY
+    : readFileSync(keyPath);
+if (!key) {
+  console.error(
+    "usage: node scripts/sign.mjs <private key path>, or set REGISTRY_SIGNING_KEY",
+  );
   process.exit(1);
 }
-const privateKey = createPrivateKey(readFileSync(keyPath));
+const privateKey = createPrivateKey(key);
 
 const index = JSON.parse(readFileSync("index.json", "utf8"));
 index.generatedAt = new Date().toISOString().replace(/\.\d+Z$/, "Z");

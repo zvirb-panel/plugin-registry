@@ -8,7 +8,9 @@ const dir = ".github/workflows";
 const pinned = /^[\w.-]+\/[\w.-]+(\/[\w./-]+)?@[0-9a-f]{40}$/;
 const digest = /^docker:\/\/\S+@sha256:[0-9a-f]{64}$/;
 
-const files = existsSync(dir) ? readdirSync(dir).filter((name) => /\.ya?ml$/.test(name)) : [];
+const files = existsSync(dir)
+  ? readdirSync(dir).filter((name) => /\.ya?ml$/.test(name))
+  : [];
 if (files.length === 0) {
   console.log("no workflows to check");
   process.exit(0);
@@ -28,7 +30,9 @@ for (const name of files) {
 }
 
 if (refused.length > 0) {
-  console.error("actions must be pinned to a 40-character commit SHA (owner/repo@<sha> # <tag>):");
+  console.error(
+    "actions must be pinned to a 40-character commit SHA (owner/repo@<sha> # <tag>):",
+  );
   for (const line of refused) console.error(`  ${line}`);
   process.exit(1);
 }

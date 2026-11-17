@@ -15,8 +15,8 @@ depends = ["install"]
 run = [
   "echo check: prettier",
   "npm exec --no-install -- prettier --check \"**/*.{json,md}\"",
-  "echo check: node --test scripts/check-index.test.mjs",
-  "node --test scripts/check-index.test.mjs",
+  "echo check: node --test scripts/check-index.test.mjs scripts/add-version.test.mjs",
+  "node --test scripts/check-index.test.mjs scripts/add-version.test.mjs",
   "echo check: node scripts/check-index.mjs",
   "node scripts/check-index.mjs",
   "echo check: node scripts/check-actions.mjs",
