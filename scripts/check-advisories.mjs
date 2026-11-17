@@ -5,15 +5,7 @@ import { exitIfNotStarted } from "./spawn.mjs";
 
 const scan = spawnSync(
   "osv-scanner",
-  [
-    "scan",
-    "source",
-    "--recursive",
-    "--allow-no-lockfiles",
-    "--config",
-    "osv-scanner.toml",
-    ".",
-  ],
+  ["scan", "source", "--recursive", "--allow-no-lockfiles", "--config", "osv-scanner.toml", "."],
   { stdio: "inherit" },
 );
 exitIfNotStarted("osv-scanner", scan);

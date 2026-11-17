@@ -1,3 +1,6 @@
+// Unit tests of adding a released version: a first release makes the
+// plugin official, a later one keeps the versions before it, and a repeat is
+// refused.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { withVersion } from "./add-version.mjs";

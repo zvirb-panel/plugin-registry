@@ -26,11 +26,14 @@ const index = JSON.parse(readFileSync("index.json", "utf8"));
 index.generatedAt = new Date().toISOString().replace(/\.\d+Z$/, "Z");
 writeFileSync("index.json", `${JSON.stringify(index, null, 2)}\n`);
 // The signature covers the bytes as committed, so Prettier runs first.
+// Prettier runs without the key in its environment.
+const { REGISTRY_SIGNING_KEY: _key, ...withoutKey } = process.env;
 const format = spawnSync(
   "npm",
   ["exec", "--no-install", "--", "prettier", "--write", "index.json"],
   {
     stdio: "inherit",
+    env: withoutKey,
   },
 );
 exitIfNotStarted("prettier", format);
