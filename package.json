@@ -3,6 +3,7 @@
   "private": true,
   "description": "The signed plugin index, icons and public keys",
   "devDependencies": {
+    "ajv": "8.20.0",
     "prettier": "3.9.10"
   }
 }
