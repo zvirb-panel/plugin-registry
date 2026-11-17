@@ -7,21 +7,30 @@ import { createHash, createPublicKey, sign, verify } from "node:crypto";
 const spkiPrefix = Buffer.from("302a300506032b6570032100", "hex");
 
 export function rawPublicKey(publicKey) {
-  return publicKey.export({ format: "der", type: "spki" }).subarray(spkiPrefix.length);
+  return publicKey
+    .export({ format: "der", type: "spki" })
+    .subarray(spkiPrefix.length);
 }
 
 export function keyIdOf(raw) {
   return createHash("sha256").update(raw).digest("hex").slice(0, 16);
 }
 
-export function publicKeyFromRaw(raw) {
-  return createPublicKey({ key: Buffer.concat([spkiPrefix, raw]), format: "der", type: "spki" });
+function publicKeyFromRaw(raw) {
+  return createPublicKey({
+    key: Buffer.concat([spkiPrefix, raw]),
+    format: "der",
+    type: "spki",
+  });
 }
 
 /** The signature file's content for these bytes. */
 export function signatureOf(bytes, privateKey) {
   const raw = rawPublicKey(createPublicKey(privateKey));
-  return { keyId: keyIdOf(raw), signature: sign(null, bytes, privateKey).toString("base64") };
+  return {
+    keyId: keyIdOf(raw),
+    signature: sign(null, bytes, privateKey).toString("base64"),
+  };
 }
 
 /**
@@ -34,8 +43,16 @@ export function signatureProblem(bytes, signatureFile, keys) {
     return "index.json.sig needs a keyId and a signature";
   }
   const raw = keys.get(keyId);
-  if (raw === undefined) return `index.json.sig names key ${keyId}, which keys/ doesn't hold`;
-  if (!verify(null, bytes, publicKeyFromRaw(raw), Buffer.from(signature, "base64"))) {
+  if (raw === undefined)
+    return `index.json.sig names key ${keyId}, which keys/ doesn't hold`;
+  if (
+    !verify(
+      null,
+      bytes,
+      publicKeyFromRaw(raw),
+      Buffer.from(signature, "base64"),
+    )
+  ) {
     return `index.json.sig doesn't verify index.json with key ${keyId}`;
   }
   return null;

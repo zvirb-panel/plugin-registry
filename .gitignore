@@ -2,3 +2,5 @@ node_modules/
 .DS_Store
 Thumbs.db
 *.log
+# A signing key never belongs here; keygen refuses a path inside the repository.
+*.pem

@@ -7,14 +7,21 @@ import Ajv from "ajv/dist/2020.js";
 import { keyIdOf, signatureProblem } from "./signing.mjs";
 
 /** The raw public keys in a folder, by key id. A file whose name isn't its key's id is a problem. */
-export function readKeys(folder) {
+function readKeys(folder) {
   const keys = new Map();
   const problems = [];
-  for (const name of readdirSync(folder).filter((file) => file.endsWith(".pub"))) {
-    const raw = Buffer.from(readFileSync(join(folder, name), "utf8").trim(), "base64");
+  for (const name of readdirSync(folder).filter((file) =>
+    file.endsWith(".pub"),
+  )) {
+    const raw = Buffer.from(
+      readFileSync(join(folder, name), "utf8").trim(),
+      "base64",
+    );
     const id = keyIdOf(raw);
-    if (raw.length !== 32) problems.push(`keys/${name} is not a 32-byte ed25519 key`);
-    else if (name !== `${id}.pub`) problems.push(`keys/${name} holds key ${id}; name it ${id}.pub`);
+    if (raw.length !== 32)
+      problems.push(`keys/${name} is not a 32-byte ed25519 key`);
+    else if (name !== `${id}.pub`)
+      problems.push(`keys/${name} holds key ${id}; name it ${id}.pub`);
     else keys.set(id, raw);
   }
   return { keys, problems };
@@ -33,10 +40,15 @@ export function indexProblems(root) {
   } catch (error) {
     return [`index.json is not JSON: ${error.message}`];
   }
-  const schema = JSON.parse(readFileSync(join(root, "index.schema.json"), "utf8"));
+  const schema = JSON.parse(
+    readFileSync(join(root, "index.schema.json"), "utf8"),
+  );
   const validate = new Ajv({ allErrors: true }).compile(schema);
   if (!validate(index)) {
-    return validate.errors.map((error) => `index.json${error.instancePath} ${error.message}`);
+    return validate.errors.map(
+      (error) =>
+        `index.json${error.instancePath} ${error.message} ${JSON.stringify(error.params)}`,
+    );
   }
 
   const problems = [];
@@ -44,7 +56,9 @@ export function indexProblems(root) {
     problems.push(`index.json lists plugin ${id} twice`);
   }
   for (const plugin of index.plugins) {
-    for (const version of repeats(plugin.versions.map((entry) => entry.version))) {
+    for (const version of repeats(
+      plugin.versions.map((entry) => entry.version),
+    )) {
       problems.push(`index.json lists ${plugin.id} ${version} twice`);
     }
   }
@@ -53,7 +67,9 @@ export function indexProblems(root) {
   problems.push(...keyProblems);
   let signatureFile;
   try {
-    signatureFile = JSON.parse(readFileSync(join(root, "index.json.sig"), "utf8"));
+    signatureFile = JSON.parse(
+      readFileSync(join(root, "index.json.sig"), "utf8"),
+    );
   } catch (error) {
     return [...problems, `index.json.sig can't be read: ${error.message}`];
   }

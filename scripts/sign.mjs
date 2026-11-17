@@ -18,9 +18,13 @@ const index = JSON.parse(readFileSync("index.json", "utf8"));
 index.generatedAt = new Date().toISOString().replace(/\.\d+Z$/, "Z");
 writeFileSync("index.json", `${JSON.stringify(index, null, 2)}\n`);
 // The signature covers the bytes as committed, so Prettier runs first.
-const format = spawnSync("npm", ["exec", "--no-install", "--", "prettier", "--write", "index.json"], {
-  stdio: "inherit",
-});
+const format = spawnSync(
+  "npm",
+  ["exec", "--no-install", "--", "prettier", "--write", "index.json"],
+  {
+    stdio: "inherit",
+  },
+);
 exitIfNotStarted("prettier", format);
 if (format.status !== 0) process.exit(format.status ?? 1);
 
