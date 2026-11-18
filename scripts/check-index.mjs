@@ -1,0 +1,108 @@
+// Fails, naming each reason, when index.json breaks its schema, repeats a
+// plugin or a version, names art that isn't in the repository, or isn't
+// signed by a key in keys/.
+import { createHash } from "node:crypto";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+import Ajv from "ajv/dist/2020.js";
+import { keyIdOf, signatureProblem } from "./signing.mjs";
+
+/** The raw public keys in a folder, by key id. A file whose name isn't its key's id is a problem. */
+function readKeys(folder) {
+  const keys = new Map();
+  const problems = [];
+  for (const name of readdirSync(folder).filter((file) =>
+    file.endsWith(".pub"),
+  )) {
+    const raw = Buffer.from(
+      readFileSync(join(folder, name), "utf8").trim(),
+      "base64",
+    );
+    const id = keyIdOf(raw);
+    if (raw.length !== 32)
+      problems.push(`keys/${name} is not a 32-byte ed25519 key`);
+    else if (name !== `${id}.pub`)
+      problems.push(`keys/${name} holds key ${id}; name it ${id}.pub`);
+    else keys.set(id, raw);
+  }
+  return { keys, problems };
+}
+
+// The API refuses art that doesn't match what the signed index gives, so a
+// file that differs here would be a broken image.
+function artProblem(root, plugin, slot) {
+  const art = plugin[slot];
+  if (art === undefined) return null;
+  const file = join(root, art.path);
+  if (!existsSync(file)) {
+    return `index.json gives ${plugin.id} ${slot} ${art.path}, which isn't in the repository`;
+  }
+  const bytes = readFileSync(file);
+  const sha256 = createHash("sha256").update(bytes).digest("hex");
+  if (bytes.length !== art.size || sha256 !== art.sha256) {
+    return `index.json gives ${plugin.id} ${slot} sha256 ${art.sha256} and ${art.size} bytes; ${art.path} has sha256 ${sha256} and ${bytes.length} bytes`;
+  }
+  return null;
+}
+
+function repeats(values) {
+  return values.filter((value, index) => values.indexOf(value) !== index);
+}
+
+/** Everything wrong with the registry in root; an empty list when it holds. */
+export function indexProblems(root) {
+  const bytes = readFileSync(join(root, "index.json"));
+  let index;
+  try {
+    index = JSON.parse(bytes.toString("utf8"));
+  } catch (error) {
+    return [`index.json is not JSON: ${error.message}`];
+  }
+  const schema = JSON.parse(
+    readFileSync(join(root, "index.schema.json"), "utf8"),
+  );
+  const validate = new Ajv({ allErrors: true }).compile(schema);
+  if (!validate(index)) {
+    return validate.errors.map(
+      (error) =>
+        `index.json${error.instancePath} ${error.message} ${JSON.stringify(error.params)}`,
+    );
+  }
+
+  const problems = [];
+  for (const id of repeats(index.plugins.map((plugin) => plugin.id))) {
+    problems.push(`index.json lists plugin ${id} twice`);
+  }
+  for (const plugin of index.plugins) {
+    for (const version of repeats(
+      plugin.versions.map((entry) => entry.version),
+    )) {
+      problems.push(`index.json lists ${plugin.id} ${version} twice`);
+    }
+    for (const slot of ["icon", "banner", "poster"]) {
+      const problem = artProblem(root, plugin, slot);
+      if (problem !== null) problems.push(problem);
+    }
+  }
+
+  const { keys, problems: keyProblems } = readKeys(join(root, "keys"));
+  problems.push(...keyProblems);
+  let signatureFile;
+  try {
+    signatureFile = JSON.parse(
+      readFileSync(join(root, "index.json.sig"), "utf8"),
+    );
+  } catch (error) {
+    return [...problems, `index.json.sig can't be read: ${error.message}`];
+  }
+  const problem = signatureProblem(bytes, signatureFile, keys);
+  if (problem !== null) problems.push(problem);
+  return problems;
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const problems = indexProblems(process.cwd());
+  for (const problem of problems) console.error(problem);
+  process.exit(problems.length === 0 ? 0 : 1);
+}

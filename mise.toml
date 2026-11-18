@@ -3,18 +3,22 @@ node = "24.22.1"
 "aqua:google/osv-scanner" = "2.7.0"
 
 [tasks.install]
-description = "Install the pinned Prettier from package-lock.json"
+description = "Install the pinned Prettier and Ajv from package-lock.json"
 run = "npm ci"
 sources = ["package-lock.json"]
 outputs = ["node_modules/.package-lock.json"]
 hide = true
 
 [tasks.check]
-description = "Prettier check on every JSON and Markdown file, pinned actions and known advisories"
+description = "Prettier check on every JSON and Markdown file, the signed index, pinned actions and known advisories"
 depends = ["install"]
 run = [
   "echo check: prettier",
   "npm exec --no-install -- prettier --check \"**/*.{json,md}\"",
+  "echo check: node --test scripts/check-index.test.mjs scripts/add-version.test.mjs",
+  "node --test scripts/check-index.test.mjs scripts/add-version.test.mjs",
+  "echo check: node scripts/check-index.mjs",
+  "node scripts/check-index.mjs",
   "echo check: node scripts/check-actions.mjs",
   "node scripts/check-actions.mjs",
   "echo check: osv-scanner",
