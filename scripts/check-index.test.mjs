@@ -1,6 +1,6 @@
 // Unit tests of the index check: each builds a registry folder in a temporary
 // directory, signed with throwaway keys, and reads the problems it reports.
-import { generateKeyPairSync } from "node:crypto";
+import { createHash, generateKeyPairSync } from "node:crypto";
 import {
   copyFileSync,
   mkdirSync,
@@ -85,41 +85,75 @@ test("a signed index listing a plugin holds", () => {
   );
 });
 
-test("art the repository holds is accepted", () => {
-  const root = registry({
-    ...empty,
-    plugins: [
-      {
-        ...minecraft,
-        icon: "icons/minecraft-java.png",
-        banner: "art/minecraft-java-banner.png",
-        poster: "art/minecraft-java-poster.png",
-      },
-    ],
+// Art as the index gives it, for bytes a test writes at path.
+function artOf(path, bytes) {
+  const sha256 = createHash("sha256").update(bytes).digest("hex");
+  return { path, sha256, size: bytes.length };
+}
+
+// A registry holding plugin's art files, each with the bytes of files.
+function registryWithArt(plugin, files) {
+  const root = registry({ ...empty, plugins: [plugin] });
+  for (const [path, bytes] of Object.entries(files)) {
+    mkdirSync(join(root, dirname(path)), { recursive: true });
+    writeFileSync(join(root, path), bytes);
+  }
+  return root;
+}
+
+const banner = Buffer.from("banner bytes");
+
+test("art the repository holds, byte for byte, is accepted", () => {
+  const icon = Buffer.from("icon bytes");
+  const poster = Buffer.from("poster bytes");
+  const plugin = {
+    ...minecraft,
+    icon: artOf("icons/minecraft-java.png", icon),
+    banner: artOf("art/minecraft-java-banner.png", banner),
+    poster: artOf("art/minecraft-java-poster.png", poster),
+  };
+  const root = registryWithArt(plugin, {
+    "icons/minecraft-java.png": icon,
+    "art/minecraft-java-banner.png": banner,
+    "art/minecraft-java-poster.png": poster,
   });
-  mkdirSync(join(root, "icons"));
-  mkdirSync(join(root, "art"));
-  for (const path of [
-    "icons/minecraft-java.png",
-    "art/minecraft-java-banner.png",
-    "art/minecraft-java-poster.png",
-  ])
-    writeFileSync(join(root, path), "");
   assert.deepEqual(indexProblems(root), []);
 });
 
 test("art the repository doesn't hold is refused", () => {
-  const withArt = { ...minecraft, banner: "art/minecraft-java-banner.png" };
-  const problems = indexProblems(registry({ ...empty, plugins: [withArt] }));
-  assert.deepEqual(problems, [
+  const plugin = {
+    ...minecraft,
+    banner: artOf("art/minecraft-java-banner.png", banner),
+  };
+  assert.deepEqual(indexProblems(registryWithArt(plugin, {})), [
     "index.json gives minecraft-java banner art/minecraft-java-banner.png, which isn't in the repository",
   ]);
 });
 
+test("art whose bytes differ from the index is refused", () => {
+  const plugin = {
+    ...minecraft,
+    banner: artOf("art/minecraft-java-banner.png", banner),
+  };
+  const root = registryWithArt(plugin, {
+    "art/minecraft-java-banner.png": Buffer.from("swapped"),
+  });
+  assert.match(
+    indexProblems(root).join("\n"),
+    /minecraft-java banner sha256 [0-9a-f]{64} and 12 bytes; art\/minecraft-java-banner\.png has sha256 [0-9a-f]{64} and 7 bytes/,
+  );
+});
+
 test("art outside art/ breaks the schema", () => {
-  const stray = { ...minecraft, poster: "posters/minecraft-java.png" };
+  const stray = {
+    ...minecraft,
+    poster: artOf("posters/minecraft-java.png", banner),
+  };
   const problems = indexProblems(registry({ ...empty, plugins: [stray] }));
-  assert.match(problems.join("\n"), /\/plugins\/0\/poster must match pattern/);
+  assert.match(
+    problems.join("\n"),
+    /\/plugins\/0\/poster\/path must match pattern/,
+  );
 });
 
 test("a channel other than official breaks the schema", () => {

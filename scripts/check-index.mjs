@@ -1,6 +1,7 @@
 // Fails, naming each reason, when index.json breaks its schema, repeats a
 // plugin or a version, names art that isn't in the repository, or isn't
 // signed by a key in keys/.
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -26,6 +27,23 @@ function readKeys(folder) {
     else keys.set(id, raw);
   }
   return { keys, problems };
+}
+
+// The API refuses art that doesn't match what the signed index gives, so a
+// file that differs here would be a broken image.
+function artProblem(root, plugin, slot) {
+  const art = plugin[slot];
+  if (art === undefined) return null;
+  const file = join(root, art.path);
+  if (!existsSync(file)) {
+    return `index.json gives ${plugin.id} ${slot} ${art.path}, which isn't in the repository`;
+  }
+  const bytes = readFileSync(file);
+  const sha256 = createHash("sha256").update(bytes).digest("hex");
+  if (bytes.length !== art.size || sha256 !== art.sha256) {
+    return `index.json gives ${plugin.id} ${slot} sha256 ${art.sha256} and ${art.size} bytes; ${art.path} has sha256 ${sha256} and ${bytes.length} bytes`;
+  }
+  return null;
 }
 
 function repeats(values) {
@@ -62,14 +80,9 @@ export function indexProblems(root) {
     )) {
       problems.push(`index.json lists ${plugin.id} ${version} twice`);
     }
-    // The API serves art from these paths, so a missing file is a broken image.
     for (const slot of ["icon", "banner", "poster"]) {
-      const path = plugin[slot];
-      if (path !== undefined && !existsSync(join(root, path))) {
-        problems.push(
-          `index.json gives ${plugin.id} ${slot} ${path}, which isn't in the repository`,
-        );
-      }
+      const problem = artProblem(root, plugin, slot);
+      if (problem !== null) problems.push(problem);
     }
   }
 

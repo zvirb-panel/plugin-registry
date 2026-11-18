@@ -18,6 +18,34 @@
     }
   },
   "$defs": {
+    "icon": {
+      "description": "A file in this repository, with the sha256 and size the API holds it to",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "size"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^icons/[a-z0-9-]+\\.(png|svg)$"
+        },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "size": { "type": "integer", "minimum": 1, "maximum": 2097152 }
+      }
+    },
+    "art": {
+      "description": "A file in this repository, with the sha256 and size the API holds it to",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "size"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^art/[a-z0-9-]+\\.(png|jpg|webp|svg)$"
+        },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "size": { "type": "integer", "minimum": 1, "maximum": 2097152 }
+      }
+    },
     "id": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]{0,62}$"
@@ -35,19 +63,16 @@
         "name": { "type": "string", "minLength": 1, "maxLength": 64 },
         "summary": { "type": "string", "minLength": 1, "maxLength": 200 },
         "icon": {
-          "description": "A path in this repository, such as icons/minecraft-java.png",
-          "type": "string",
-          "pattern": "^icons/[a-z0-9-]+\\.(png|svg)$"
+          "description": "A square icon, 512 by 512, in icons/",
+          "$ref": "#/$defs/icon"
         },
         "banner": {
-          "description": "Wide art for the plugin's card, 920 by 430: a path in this repository, such as art/minecraft-java-banner.png",
-          "type": "string",
-          "pattern": "^art/[a-z0-9-]+\\.(png|jpg|webp|svg)$"
+          "description": "Wide art for the plugin's card, 920 by 430, in art/",
+          "$ref": "#/$defs/art"
         },
         "poster": {
-          "description": "Tall art for picking the game, 600 by 900: a path in this repository, such as art/minecraft-java-poster.png",
-          "type": "string",
-          "pattern": "^art/[a-z0-9-]+\\.(png|jpg|webp|svg)$"
+          "description": "Tall art for picking the game, 600 by 900, in art/",
+          "$ref": "#/$defs/art"
         },
         "channel": {
           "description": "Where the plugin comes from. Only official exists; a paid channel may come later.",
