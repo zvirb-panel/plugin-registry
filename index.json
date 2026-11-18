@@ -1,5 +1,30 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-17T17:33:49Z",
-  "plugins": []
+  "generatedAt": "2026-11-18T12:38:55Z",
+  "plugins": [
+    {
+      "id": "minecraft-java",
+      "name": "Minecraft: Java",
+      "summary": "Paper and Vanilla servers.",
+      "games": [
+        {
+          "id": "minecraft-java",
+          "name": "Minecraft: Java"
+        }
+      ],
+      "channel": "official",
+      "versions": [
+        {
+          "version": "0.2.0",
+          "pdk": "^0.4",
+          "publishedAt": "2026-11-18T12:38:55Z",
+          "archive": {
+            "url": "https://github.com/zvirb-panel/plugins/releases/download/minecraft-java-v0.2.0/minecraft-java-0.2.0.tar.gz",
+            "sha256": "d7170d767565e13d51367e8371771c075e0d7e020d42cdb530cfeaae808793cd",
+            "size": 122219
+          }
+        }
+      ]
+    }
+  ]
 }
