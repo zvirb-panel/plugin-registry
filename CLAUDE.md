@@ -1,6 +1,6 @@
 # plugin-registry
 
-The registry of Zvirb plugins: a signed `index.json`, icons and public keys. Read the workspace `CLAUDE.md` and `.claude/rules/` first; they outrank this file.
+The registry of Zvirb plugins: a signed `index.json`, icons, art and public keys. Read the workspace `CLAUDE.md` and `.claude/rules/` first; they outrank this file.
 
 ## Layout
 
