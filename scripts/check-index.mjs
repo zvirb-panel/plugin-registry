@@ -1,6 +1,7 @@
 // Fails, naming each reason, when index.json breaks its schema, repeats a
-// plugin or a version, or isn't signed by a key in keys/.
-import { readFileSync, readdirSync } from "node:fs";
+// plugin or a version, names art that isn't in the repository, or isn't
+// signed by a key in keys/.
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import Ajv from "ajv/dist/2020.js";
@@ -60,6 +61,15 @@ export function indexProblems(root) {
       plugin.versions.map((entry) => entry.version),
     )) {
       problems.push(`index.json lists ${plugin.id} ${version} twice`);
+    }
+    // The API serves art from these paths, so a missing file is a broken image.
+    for (const slot of ["icon", "banner", "poster"]) {
+      const path = plugin[slot];
+      if (path !== undefined && !existsSync(join(root, path))) {
+        problems.push(
+          `index.json gives ${plugin.id} ${slot} ${path}, which isn't in the repository`,
+        );
+      }
     }
   }
 

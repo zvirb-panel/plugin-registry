@@ -85,6 +85,43 @@ test("a signed index listing a plugin holds", () => {
   );
 });
 
+test("art the repository holds is accepted", () => {
+  const root = registry({
+    ...empty,
+    plugins: [
+      {
+        ...minecraft,
+        icon: "icons/minecraft-java.png",
+        banner: "art/minecraft-java-banner.png",
+        poster: "art/minecraft-java-poster.png",
+      },
+    ],
+  });
+  mkdirSync(join(root, "icons"));
+  mkdirSync(join(root, "art"));
+  for (const path of [
+    "icons/minecraft-java.png",
+    "art/minecraft-java-banner.png",
+    "art/minecraft-java-poster.png",
+  ])
+    writeFileSync(join(root, path), "");
+  assert.deepEqual(indexProblems(root), []);
+});
+
+test("art the repository doesn't hold is refused", () => {
+  const withArt = { ...minecraft, banner: "art/minecraft-java-banner.png" };
+  const problems = indexProblems(registry({ ...empty, plugins: [withArt] }));
+  assert.deepEqual(problems, [
+    "index.json gives minecraft-java banner art/minecraft-java-banner.png, which isn't in the repository",
+  ]);
+});
+
+test("art outside art/ breaks the schema", () => {
+  const stray = { ...minecraft, poster: "posters/minecraft-java.png" };
+  const problems = indexProblems(registry({ ...empty, plugins: [stray] }));
+  assert.match(problems.join("\n"), /\/plugins\/0\/poster must match pattern/);
+});
+
 test("a channel other than official breaks the schema", () => {
   const paid = { ...minecraft, channel: "paid" };
   const problems = indexProblems(registry({ ...empty, plugins: [paid] }));

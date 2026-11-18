@@ -39,6 +39,16 @@
           "type": "string",
           "pattern": "^icons/[a-z0-9-]+\\.(png|svg)$"
         },
+        "banner": {
+          "description": "Wide art for the plugin's card, 920 by 430: a path in this repository, such as art/minecraft-java-banner.png",
+          "type": "string",
+          "pattern": "^art/[a-z0-9-]+\\.(png|jpg|webp|svg)$"
+        },
+        "poster": {
+          "description": "Tall art for picking the game, 600 by 900: a path in this repository, such as art/minecraft-java-poster.png",
+          "type": "string",
+          "pattern": "^art/[a-z0-9-]+\\.(png|jpg|webp|svg)$"
+        },
         "channel": {
           "description": "Where the plugin comes from. Only official exists; a paid channel may come later.",
           "const": "official"
