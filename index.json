@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "generatedAt": "2026-11-18T12:38:55Z",
+  "generatedAt": "2026-11-22T19:34:02Z",
   "plugins": [
     {
       "id": "minecraft-java",
@@ -22,6 +22,16 @@
             "url": "https://github.com/zvirb-panel/plugins/releases/download/minecraft-java-v0.2.0/minecraft-java-0.2.0.tar.gz",
             "sha256": "d7170d767565e13d51367e8371771c075e0d7e020d42cdb530cfeaae808793cd",
             "size": 122219
+          }
+        },
+        {
+          "version": "0.2.1",
+          "pdk": "^0.4",
+          "publishedAt": "2026-11-22T19:34:02Z",
+          "archive": {
+            "url": "https://github.com/zvirb-panel/plugins/releases/download/minecraft-java-v0.2.1/minecraft-java-0.2.1.tar.gz",
+            "sha256": "347296f310f0c19fe98249cec97b1be7db0c4b5686cf25c2df40b79d760eb568",
+            "size": 122190
           }
         }
       ]
